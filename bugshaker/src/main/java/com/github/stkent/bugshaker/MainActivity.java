@@ -215,7 +215,7 @@ public class MainActivity extends Activity implements OnClickListener {
 					File log = LogcatUtil.saveLogcatToFile(getApplicationContext());
 					Uri logUri = Uri.fromFile(log);
 					Set<String> stringSet = SharedPreferencesUtil.getEmailAddresses(getBaseContext());
-					String[] emailAddressesArray = (String[]) stringSet.toArray(new String[stringSet.size()]);
+					String[] emailAddressesArray = stringSet.toArray(new String[stringSet.size()]);
 					SendEmailUtil.sendEmailWithScreenshot(getBaseContext(), bitmapUri, logUri,
 						emailAddressesArray
 						, SharedPreferencesUtil.getEmailSubjectLine(getBaseContext()));

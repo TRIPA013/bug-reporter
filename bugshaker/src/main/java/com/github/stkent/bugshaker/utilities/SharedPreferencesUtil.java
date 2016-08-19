@@ -23,21 +23,13 @@ public class SharedPreferencesUtil {
 	}
 
 	public static Set<String> getEmailAddresses(Context context) {
-		Set<String> bob = new HashSet<>();
-		bob.add("a");
-		bob.add("b");
-		SharedPreferences settings;
-		settings = context.getSharedPreferences(EMAIL_ADDRESSES, Context.MODE_PRIVATE);
-		Set<String> text = (Set<String>)settings.getStringSet(KEY_FOR_EMAIL_ADDRESSES, null);
-		return text;
+		SharedPreferences settings = context.getSharedPreferences(EMAIL_ADDRESSES, Context.MODE_PRIVATE);
+		return settings.getStringSet(KEY_FOR_EMAIL_ADDRESSES, null);
 	}
 
 	public static String getEmailSubjectLine(Context context) {
-		SharedPreferences settings;
-		String text;
-		settings = context.getSharedPreferences(EMAIL_ADDRESSES, Context.MODE_PRIVATE);
-		text = settings.getString(KEY_FOR_EMAIL_SUBJECT_LINE, null);
-		return text;
+		SharedPreferences settings = context.getSharedPreferences(EMAIL_ADDRESSES, Context.MODE_PRIVATE);
+		return settings.getString(KEY_FOR_EMAIL_SUBJECT_LINE, null);
 	}
 
 }
