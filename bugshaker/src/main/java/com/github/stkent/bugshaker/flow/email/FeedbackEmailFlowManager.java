@@ -16,8 +16,7 @@
  */
 package com.github.stkent.bugshaker.flow.email;
 
-import java.io.File;
-import java.util.Set;
+import android.Manifest;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -27,11 +26,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.view.WindowManager;
-
 import com.github.stkent.bugshaker.ActivityReferenceManager;
 import com.github.stkent.bugshaker.MainActivity;
 import com.github.stkent.bugshaker.R;
@@ -44,7 +45,8 @@ import com.github.stkent.bugshaker.utilities.Logger;
 import com.github.stkent.bugshaker.utilities.SendEmailUtil;
 import com.github.stkent.bugshaker.utilities.SharedPreferencesUtil;
 import com.github.stkent.bugshaker.utilities.Toaster;
-
+import java.io.File;
+import java.util.Set;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -59,63 +61,73 @@ public final class FeedbackEmailFlowManager {
 	private boolean ignoreFlagSecure;
 	private ScreenshotProvider screenshotProvider;
 	private ActivityReferenceManager activityReferenceManager;
-	private Context context;
 
-	public FeedbackEmailFlowManager(ScreenshotProvider screenshotProvider, Application application) {
+	public FeedbackEmailFlowManager(Application application) {
 		this.screenshotProvider = ScreenshotUtil.getScreenshotProvider(application);
 		activityReferenceManager = new ActivityReferenceManager();
-		context = application.getBaseContext();
 
 	}
 
 	private final OnClickListener screenshotListener = new OnClickListener() {
 		@Override
 		public void onClick(DialogInterface dialogInterface, int i) {
-
-			final Activity activity = activityReferenceManager.getValidatedActivity();
-			final Context context = activity.getBaseContext();
-			final Toaster toaster = new Toaster(activity);
-			final Logger logger = new Logger(true);
-			if (activity == null) {
-				return;
-			}
-
-			if (shouldAttemptToCaptureScreenshot(activity)) {
-				if (EmailCapabilitiesProvider.canSendEmailsWithAttachments(
-					activityReferenceManager.getValidatedActivity().getPackageManager())) {
-					screenshotProvider.getScreenshotUri(activity)
-						.single()
-						.observeOn(AndroidSchedulers.mainThread())
-						.subscribeOn(AndroidSchedulers.mainThread())
-						.subscribe(new Subscriber<Uri>() {
-							@Override
-							public void onCompleted() {
-								// This method intentionally left blank.
-							}
-
-							@Override
-							public void onError(final Throwable e) {
-								final String errorString = "Screenshot capture failed";
-								toaster.toast(errorString);
-								logger.e(errorString);
-							}
-
-							@Override
-							public void onNext(final Uri uri) {
-								startActivity(context);
-							}
-						});
+			Activity activity = activityReferenceManager.getValidatedActivity();
+			if (Build.VERSION.SDK_INT >= 23) {
+				int permissionCheck = ContextCompat
+					.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+				if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+					navigateToScreenshotAnnotateActivity();
 				}
 			}
 			else {
-				final String warningString = "Window is secured; no screenshot taken";
-				toaster.toast(warningString);
-				logger.d(warningString);
+				navigateToScreenshotAnnotateActivity();
 			}
-
 		}
 
 	};
+
+	private void navigateToScreenshotAnnotateActivity() {
+		final Activity activity = activityReferenceManager.getValidatedActivity();
+		final Context context = activity.getBaseContext();
+		final Toaster toaster = new Toaster(activity);
+		final Logger logger = new Logger(true);
+		if (activity == null) {
+			return;
+		}
+
+		if (shouldAttemptToCaptureScreenshot(activity)) {
+			if (EmailCapabilitiesProvider.canSendEmailsWithAttachments(
+				activityReferenceManager.getValidatedActivity().getPackageManager())) {
+				screenshotProvider.getScreenshotUri(activity)
+					.single()
+					.observeOn(AndroidSchedulers.mainThread())
+					.subscribeOn(AndroidSchedulers.mainThread())
+					.subscribe(new Subscriber<Uri>() {
+						@Override
+						public void onCompleted() {
+							// This method intentionally left blank.
+						}
+
+						@Override
+						public void onError(final Throwable e) {
+							final String errorString = "Screenshot capture failed";
+							toaster.toast(errorString);
+							logger.e(errorString);
+						}
+
+						@Override
+						public void onNext(final Uri uri) {
+							startActivity(context);
+						}
+					});
+			}
+		}
+		else {
+			final String warningString = "Window is secured; no screenshot taken";
+			toaster.toast(warningString);
+			logger.d(warningString);
+		}
+	}
 
 
 	private final OnClickListener reportBugClickListener = new OnClickListener() {

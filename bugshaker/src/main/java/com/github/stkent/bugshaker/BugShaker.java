@@ -167,8 +167,7 @@ public final class BugShaker implements ShakeDetector.Listener {
 
 		logger = new Logger(loggingEnabled);
 
-		feedbackEmailFlowManager = new FeedbackEmailFlowManager(
-			ScreenshotUtil.getScreenshotProvider(application), application);
+		feedbackEmailFlowManager = new FeedbackEmailFlowManager(application);
 
 		assembled = true;
 		return this;
