@@ -16,11 +16,6 @@
  */
 package com.github.stkent.bugshaker.flow.email.screenshot.maps;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -32,12 +27,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.github.stkent.bugshaker.flow.email.screenshot.BaseScreenshotProvider;
 import com.github.stkent.bugshaker.utilities.ActivityUtils;
 import com.github.stkent.bugshaker.utilities.Logger;
 import com.google.android.gms.maps.MapView;
-
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -133,7 +130,10 @@ public final class MapScreenshotProvider extends BaseScreenshotProvider {
 				final ViewGroup viewGroup = (ViewGroup) viewToProcess;
 
 				for (int childIndex = 0; childIndex < viewGroup.getChildCount(); childIndex++) {
-					viewsToProcess.add(viewGroup.getChildAt(childIndex));
+					View childView = viewGroup.getChildAt(childIndex);
+					if (childView.getVisibility() == VISIBLE) {
+						viewsToProcess.add(childView);
+					}
 				}
 			}
 		}
